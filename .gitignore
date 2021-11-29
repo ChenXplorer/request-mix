@@ -1,0 +1,16 @@
+node_modules
+dist
+.nyc_output
+.idea
+.storybook
+.vscode
+storybook-static
+docs
+playground
+
+*.tsbuildinfo
+.DS_Store
+dist-ssr
+*.local
+*.log
+!playground/README.md

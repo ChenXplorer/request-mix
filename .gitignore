@@ -1,5 +1,6 @@
 node_modules
 dist
+example
 .nyc_output
 .idea
 .storybook

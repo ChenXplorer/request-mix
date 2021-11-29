@@ -41,8 +41,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "node ./scripts/preCommit.js && lint-staged",
-      "pre-push": "yarn test --coverage=false"
+      "pre-commit": "node ./scripts/preCommit.js && lint-staged"
     }
   },
   "lint-staged": {

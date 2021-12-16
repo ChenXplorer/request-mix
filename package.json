@@ -39,17 +39,6 @@
     "format": "prettier -w '**/*.ts?(x)'",
     "vite": "vite --config ./build/vite.config.ts"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "node ./scripts/preCommit.js && lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix"
-    ],
-    "package.json": "sort-package-json"
-  },
   "devDependencies": {
     "@babel/core": "^7.12.3",
     "@babel/plugin-proposal-nullish-coalescing-operator": "^7.14.5",

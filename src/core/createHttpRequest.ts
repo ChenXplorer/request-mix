@@ -1,13 +1,12 @@
-import { HttpRequest, Query } from './../types/request';
-import { ref } from '@vue/runtime-core';
-import { QueryResult } from 'src/types/request';
-import { genRequest } from './genRequest';
-import { setStateMap } from '../utils';
+import { Mutate, Query } from '../types/request';
+import { Ref, ref } from 'vue';
+import { HttpRequestResult } from '../types/request';
+import { isFunction, setStateMap } from '../utils';
 
-export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): QueryResult<P, R> => {
+export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): HttpRequestResult<P, R> => {
   const loading = ref(false);
   const error = ref(null);
-  const data = ref<R>();
+  const data = ref() as Ref<R>;
 
   const setState = setStateMap({
     loading,
@@ -39,10 +38,18 @@ export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): Q
       });
   };
 
+  const mutate: Mutate<R> = (value) => {
+    const newData = isFunction(value) ? value(data.value) : value;
+    setState({
+      data: newData,
+    });
+  };
+
   return {
     loading,
     error,
     data,
     load,
+    mutate,
   };
 };

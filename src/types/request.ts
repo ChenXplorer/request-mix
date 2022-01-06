@@ -1,4 +1,4 @@
-import { Ref } from "@vue/runtime-core";
+import { Ref } from '@vue/runtime-core';
 
 export type HttpFunc<P extends unknown[], R> = (...args: P) => Promise<R>;
 
@@ -7,10 +7,7 @@ export type HttpObject = Partial<RequestInit> & {
   [key: string]: any;
 };
 
-export type HttpRequest<P extends unknown[], R> =
-  | HttpFunc<P, R>
-  | string
-  | HttpObject;
+export type HttpRequest<P extends unknown[], R> = HttpFunc<P, R> | string | HttpObject;
 
 export type State<P extends unknown[], R> = {
   loading: Ref<boolean>;
@@ -25,6 +22,8 @@ export type UnRefAttr<T> = {
 
 export type Query<P extends unknown[], R> = (...args: P) => Promise<R>;
 
-export interface QueryResult<P extends unknown[], R> extends State<P, R> {
+export type Mutate<R> = (data: R | ((oldData: R) => R)) => void;
+export interface HttpRequestResult<P extends unknown[], R> extends State<P, R> {
   load: (...args: P) => Promise<any | null>;
+  mutate: Mutate<R>;
 }

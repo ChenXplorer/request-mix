@@ -5,8 +5,8 @@ import { isFunction, setStateMap } from '../utils';
 
 export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): HttpRequestResult<P, R> => {
   const loading = ref(false);
-  const error = ref(null);
-  const data = ref() as Ref<R>;
+  const error = ref();
+  const data = <Ref<R>>ref();
 
   const setState = setStateMap({
     loading,

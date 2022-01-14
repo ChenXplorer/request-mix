@@ -16,7 +16,7 @@ export type State<P extends unknown[], R> = {
 };
 export type UnRef<T> = T extends Ref<infer K> ? K : T;
 
-export type UnRefAttr<T> = {
+export type UnwrapRefs<T> = {
   [key in keyof T]: UnRef<T[key]>;
 };
 
@@ -26,4 +26,8 @@ export type Mutate<R> = (data: R | ((oldData: R) => R)) => void;
 export interface HttpRequestResult<P extends unknown[], R> extends State<P, R> {
   load: (...args: P) => Promise<any | null>;
   mutate: Mutate<R>;
+}
+
+export interface ParallelResults<P extends unknown[], R> {
+  [key: string]: UnwrapRefs<HttpRequestResult<P, R>>;
 }

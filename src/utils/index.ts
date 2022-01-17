@@ -22,13 +22,10 @@ export const isString = (val: unknown): val is string => typeof val === 'string'
 export const isPlainObject = (val: unknown): val is Record<string, any> =>
   Object.prototype.toString.call(val) === '[object object]';
 
-export const setStateRelation = <P extends unknown[], R>(
-  oldState: State<P, R>,
-  cb?: (state: State<P, R>, parallelKey: string) => void,
-) => {
-  return (newState: Partial<UnwrapRefs<State<P, R>>>, parallelKey?: string) => {
+export const setStateRelation = <P extends unknown[], R>(oldState: State<P, R>, cb?: (state: State<P, R>) => void) => {
+  return (newState: Partial<UnwrapRefs<State<P, R>>>) => {
     Object.keys(newState).forEach((key) => (oldState[key].value = newState[key]));
-    cb?.(oldState, parallelKey ?? '');
+    cb?.(oldState);
   };
 };
 

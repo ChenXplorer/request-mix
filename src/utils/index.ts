@@ -1,4 +1,5 @@
-import { State, UnwrapRefs } from '../types/request';
+import { Ref, unref } from 'vue';
+import { State, UnRef, UnwrapRefs } from '../types/request';
 
 export async function fetchHttp(url: string, options?: Partial<RequestInit>) {
   const res = await fetch(url, options);
@@ -21,8 +22,20 @@ export const isString = (val: unknown): val is string => typeof val === 'string'
 export const isPlainObject = (val: unknown): val is Record<string, any> =>
   Object.prototype.toString.call(val) === '[object object]';
 
-export const setStateMap = <P extends unknown[], R>(oldState: State<P, R>) => {
-  return (newState: Partial<UnwrapRefs<State<P, R>>>) => {
+export const setStateRelation = <P extends unknown[], R>(
+  oldState: State<P, R>,
+  cb?: (state: State<P, R>, parallelKey: string) => void,
+) => {
+  return (newState: Partial<UnwrapRefs<State<P, R>>>, parallelKey?: string) => {
     Object.keys(newState).forEach((key) => (oldState[key].value = newState[key]));
+    cb?.(oldState, parallelKey ?? '');
   };
+};
+
+export const unrefObj = (obj: { [key: string]: Ref<any> }): any => {
+  const res = {};
+  Object.keys(obj).forEach((o) => {
+    res[o] = unref(obj[0]);
+  });
+  return res;
 };

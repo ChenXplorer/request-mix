@@ -5,4 +5,6 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   manual: boolean;
   parallelKey: (...arg: P) => string;
   ready: Ref<Boolean>;
+  cacheKey: string;
+  cacheTime: number;
 }>;

@@ -1,25 +1,43 @@
+import { BaseOptions } from './../types/options';
 import { Mutate, Query } from '../types/request';
 import { Ref, ref } from 'vue';
 import { HttpRequestResult } from '../types/request';
-import { isFunction, setStateMap } from '../utils';
+import { isFunction, setStateRelation } from '../utils';
+import { CACHE } from '../utils/cache';
+import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME } from '../utils/cons';
 
-export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): HttpRequestResult<P, R> => {
+export const createHttpRequest = <P extends unknown[], R>(
+  query: Query<P, R>,
+  option: BaseOptions<P, R>,
+): HttpRequestResult<P, R> => {
   const loading = ref(false);
   const error = ref();
   const data = <Ref<R>>ref();
+  const params = <Ref<P>>ref();
 
-  const setState = setStateMap({
-    loading,
-    error,
-    data,
-  });
+  const setState = setStateRelation<P, R>(
+    {
+      loading,
+      error,
+      data,
+      params,
+    },
+    (state) => {
+      const cacheKey = option?.cacheKey ?? '';
+      const cacheTime = option?.cacheTime ?? DEFAULT_CACHE_TIME;
+      const parallelKey = option?.parallelKey?.(...state.params.value) ?? DEFAULT_PARALLEL_KEY;
+      CACHE.update(cacheKey, state, cacheTime, parallelKey);
+    },
+  );
 
   const load = (...args: P) => {
     setState({
       loading: true,
       error: null,
       data: null,
+      params: args,
     });
+
     return query(...args)
       .then((res) => {
         const result = res;
@@ -48,6 +66,7 @@ export const createHttpRequest = <P extends unknown[], R>(query: Query<P, R>): H
   return {
     loading,
     error,
+    params,
     data,
     load,
     mutate,

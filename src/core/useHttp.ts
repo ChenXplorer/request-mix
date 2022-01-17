@@ -1,20 +1,19 @@
-import { BaseOptions } from 'src/types/options';
+import { BaseOptions } from '../types/options';
+import { DEFAULT_PARALLEL_KEY } from '../utils/cons';
 import { computed, reactive, Ref, ref, watch } from 'vue';
 import { HttpRequest, ParallelResults, HttpRequestResult, UnwrapRefs, Mutate } from '../types/request';
 import { createHttpRequest } from './createHttpRequest';
 import { genRequest } from './genRequest';
 
-const DEFAULT_PARALLEL_KEY = 'DEFAULT_PARALLEL_KEY';
-
 export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
   const query = genRequest(request);
 
   const config = options ?? {};
-  const { defaultParams = ([] as unknown) as P, manual = false, parallelKey, ready = ref(true) } = config;
+  const { defaultParams = ([] as unknown) as P, manual = false, parallelKey, ready = ref(true), cacheKey } = config;
 
   const parallelLatestKey = ref(DEFAULT_PARALLEL_KEY);
   const parallelResults = <ParallelResults<P, R>>reactive({
-    DEFAULT_PARALLEL_KEY: reactive(createHttpRequest<P, R>(query)),
+    DEFAULT_PARALLEL_KEY: reactive(createHttpRequest<P, R>(query, config)),
   });
   const parallelLatestResult = computed(() => parallelResults[parallelLatestKey.value] ?? {});
   //set latest total state
@@ -31,7 +30,9 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
     }
     const currentKey = parallelKey?.(...args) ?? DEFAULT_PARALLEL_KEY;
     if (!parallelResults[currentKey]) {
-      parallelResults[currentKey] = <UnwrapRefs<HttpRequestResult<P, R>>>reactive(createHttpRequest<P, R>(query));
+      parallelResults[currentKey] = <UnwrapRefs<HttpRequestResult<P, R>>>(
+        reactive(createHttpRequest<P, R>(query, config))
+      );
     }
     parallelLatestKey.value = currentKey;
     return parallelLatestResult.value.load(...args);
@@ -40,6 +41,10 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
 
   if (!manual) {
     load(...defaultParams);
+  }
+
+  if (cacheKey) {
+    //TODO
   }
 
   // watch ready

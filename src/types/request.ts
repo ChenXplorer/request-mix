@@ -13,6 +13,7 @@ export type State<P extends unknown[], R> = {
   loading: Ref<boolean>;
   data: Ref<R | undefined | null>;
   error: Ref<Error | undefined | null>;
+  params: Ref<P>;
 };
 export type UnRef<T> = T extends Ref<infer K> ? K : T;
 

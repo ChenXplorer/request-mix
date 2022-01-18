@@ -31,6 +31,16 @@ export const createHttpRequest = <P extends unknown[], R>(
     },
   );
 
+  // loading 闪烁问题 处理
+  // 1. 延迟loading = true ✅
+  // 2. 延迟loading = false
+  const loadingDelayTimer = ref();
+  const handleLoadingDelay = () => {
+    if (option?.delayLoadingTime) {
+      loadingDelayTimer.value = setTimeout(setState, option?.delayLoadingTime, { loading: true });
+    }
+  };
+
   const load = (...args: P) => {
     setState({
       loading: true,
@@ -38,6 +48,7 @@ export const createHttpRequest = <P extends unknown[], R>(
       data: null,
       params: args,
     });
+    handleLoadingDelay();
 
     return query(...args)
       .then((res) => {
@@ -54,6 +65,9 @@ export const createHttpRequest = <P extends unknown[], R>(
           loading: false,
           error: error,
         });
+      })
+      .finally(() => {
+        loadingDelayTimer && clearTimeout(loadingDelayTimer.value);
       });
   };
 

@@ -7,4 +7,5 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   ready: Ref<Boolean>;
   cacheKey: string;
   cacheTime: number;
+  delayLoadingTime: number;
 }>;

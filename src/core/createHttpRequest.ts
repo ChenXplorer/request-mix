@@ -1,5 +1,5 @@
 import { BaseOptions } from './../types/options';
-import { Mutate, Query } from '../types/request';
+import { Mutate, Query, State, UnwrapRefs } from '../types/request';
 import { Ref, ref } from 'vue';
 import { HttpRequestResult } from '../types/request';
 import { isFunction, setStateRelation } from '../utils';
@@ -9,11 +9,12 @@ import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME } from '../utils/cons';
 export const createHttpRequest = <P extends unknown[], R>(
   query: Query<P, R>,
   option: BaseOptions<P, R>,
+  initialData?: Partial<UnwrapRefs<State<P, R>>>,
 ): HttpRequestResult<P, R> => {
-  const loading = ref(false);
-  const error = ref();
-  const data = <Ref<R>>ref();
-  const params = <Ref<P>>ref();
+  const loading = ref(initialData?.loading ?? false);
+  const error = ref(initialData?.error ?? null);
+  const data = <Ref<R>>ref(initialData?.data ?? null);
+  const params = <Ref<P>>ref(initialData?.params ?? null);
 
   const setState = setStateRelation<P, R>(
     {

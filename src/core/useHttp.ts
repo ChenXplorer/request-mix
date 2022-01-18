@@ -4,6 +4,7 @@ import { computed, reactive, Ref, ref, watch } from 'vue';
 import { HttpRequest, ParallelResults, HttpRequestResult, UnwrapRefs, Mutate } from '../types/request';
 import { createHttpRequest } from './createHttpRequest';
 import { genRequest } from './genRequest';
+import { CACHE } from '../utils/cache';
 
 export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
   const query = genRequest(request);
@@ -44,7 +45,17 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
   }
 
   if (cacheKey) {
-    //TODO
+    const cacheData = CACHE.get<P, R>(cacheKey)?.data;
+    const cacheParallelResult = cacheData?.parallelResults ?? {};
+    const cacheCurrentParallelKey = cacheData?.currentParallelKey;
+    Object.keys(cacheParallelResult).forEach((cpr) => {
+      parallelResults[cpr] = <UnwrapRefs<HttpRequestResult<P, R>>>reactive(
+        createHttpRequest<P, R>(query, config, {
+          ...cacheParallelResult[cpr],
+        }),
+      );
+    });
+    parallelLatestKey.value = cacheCurrentParallelKey ?? parallelLatestKey.value;
   }
 
   // watch ready

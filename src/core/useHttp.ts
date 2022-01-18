@@ -7,10 +7,17 @@ import { genRequest } from './genRequest';
 import { CACHE } from '../utils/cache';
 
 export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
-  const query = genRequest(request);
+  const query = genRequest<P, R>(request);
 
   const config = options ?? {};
-  const { defaultParams = ([] as unknown) as P, manual = false, parallelKey, ready = ref(true), cacheKey } = config;
+  const {
+    defaultParams = ([] as unknown) as P,
+    manual = false,
+    parallelKey,
+    ready = ref(true),
+    cacheKey,
+    refreshDeps,
+  } = config;
 
   const parallelLatestKey = ref(DEFAULT_PARALLEL_KEY);
   const parallelResults = <ParallelResults<P, R>>reactive({
@@ -39,6 +46,7 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
     return parallelLatestResult.value.load(...args);
   };
   const mutate: Mutate<R> = (value) => parallelLatestResult.value.mutate(value);
+  const refresh = () => parallelLatestResult.value.refresh();
 
   if (!manual) {
     load(...defaultParams);
@@ -66,12 +74,20 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
     }
   });
 
+  // watch refreshDeps
+  // 请求函数需要闭包的形式引用参数
+  refreshDeps?.length &&
+    watch(refreshDeps, () => {
+      !defaultParams?.length && parallelLatestResult.value.refresh();
+    });
+
   return {
     load,
     loading,
     error,
     data,
     mutate,
+    refresh,
     parallelResults,
   };
 }

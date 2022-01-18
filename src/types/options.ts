@@ -1,4 +1,4 @@
-import { Ref } from 'vue';
+import { Ref, WatchSource } from 'vue';
 
 export type BaseOptions<P extends unknown[], R> = Partial<{
   defaultParams: P;
@@ -8,4 +8,5 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   cacheKey: string;
   cacheTime: number;
   delayLoadingTime: number;
+  refreshDeps: WatchSource<any>[];
 }>;

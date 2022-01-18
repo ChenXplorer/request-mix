@@ -78,6 +78,10 @@ export const createHttpRequest = <P extends unknown[], R>(
     });
   };
 
+  const refresh = () => {
+    load(...params.value);
+  };
+
   return {
     loading,
     error,
@@ -85,5 +89,6 @@ export const createHttpRequest = <P extends unknown[], R>(
     data,
     load,
     mutate,
+    refresh,
   };
 };

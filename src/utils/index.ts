@@ -36,3 +36,38 @@ export const unrefObj = (obj: { [key: string]: Ref<any> }): any => {
   });
   return res;
 };
+
+export function isObject(value: any) {
+  const type = typeof value;
+  return type !== null && (type === 'object' || type === 'function');
+}
+
+export function merge(source: any, other: any) {
+  if (!isObject(source) || !isObject(other)) {
+    return other === undefined ? source : other;
+  }
+  if ((Array.isArray(source) && !Array.isArray(other)) || (!Array.isArray(source) && Array.isArray(other))) {
+    return other;
+  }
+
+  return Object.keys({ ...source, ...other }).reduce(
+    (acc, key) => {
+      acc[key] = merge(source[key], other[key]);
+      return acc;
+    },
+    Array.isArray(source) ? [] : {},
+  );
+}
+
+export function getByPath(obj: Object, path: string, def: any) {
+  if (!obj || Object.keys(obj).length === 0) return def;
+  const pathArr = path.replace(/\[(\d+)\]/g, '.$1').split('.');
+  let result = obj;
+  for (let i = 0; i < pathArr.length; i++) {
+    result = result[pathArr[i]];
+    if (result === undefined) {
+      return def;
+    }
+  }
+  return result;
+}

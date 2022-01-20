@@ -1,4 +1,4 @@
-import { Ref } from '@vue/runtime-core';
+import { Ref } from 'vue';
 
 export type HttpFunc<P extends unknown[], R> = (...args: P) => Promise<R>;
 

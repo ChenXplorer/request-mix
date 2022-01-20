@@ -2,13 +2,12 @@ import { BaseOptions } from '../types/options';
 import { DEFAULT_PARALLEL_KEY } from '../utils/cons';
 import { computed, reactive, Ref, ref, watch } from 'vue';
 import { HttpRequest, ParallelResults, HttpRequestResult, UnwrapRefs, Mutate } from '../types/request';
-import { createHttpRequest } from './createHttpRequest';
+import { createCommonFetch } from './createCommonFetch';
 import { genRequest } from './genRequest';
 import { CACHE } from '../utils/cache';
 
-export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
-  const query = genRequest<P, R>(request);
-
+export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
+  const curRequest = genRequest<P, R>(request);
   const config = options ?? {};
   const {
     defaultParams = ([] as unknown) as P,
@@ -21,16 +20,18 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
 
   const parallelLatestKey = ref(DEFAULT_PARALLEL_KEY);
   const parallelResults = <ParallelResults<P, R>>reactive({
-    DEFAULT_PARALLEL_KEY: reactive(createHttpRequest<P, R>(query, config)),
+    DEFAULT_PARALLEL_KEY: reactive(createCommonFetch<P, R>(curRequest, config)),
   });
   const parallelLatestResult = computed(() => parallelResults[parallelLatestKey.value] ?? {});
   //set latest total state
   const loading = computed(() => parallelLatestResult.value.loading);
   const error = computed(() => parallelLatestResult.value.error);
   const data = computed(() => parallelLatestResult.value.data);
+  const params = computed(() => parallelLatestResult.value.params);
 
   const readyParams = <Ref<P>>ref();
   const triggerReady = computed(() => ready.value);
+
   const load = (...args: P) => {
     if (!triggerReady.value) {
       readyParams.value = args;
@@ -39,13 +40,15 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
     const currentKey = parallelKey?.(...args) ?? DEFAULT_PARALLEL_KEY;
     if (!parallelResults[currentKey]) {
       parallelResults[currentKey] = <UnwrapRefs<HttpRequestResult<P, R>>>(
-        reactive(createHttpRequest<P, R>(query, config))
+        reactive(createCommonFetch<P, R>(curRequest, config))
       );
     }
     parallelLatestKey.value = currentKey;
     return parallelLatestResult.value.load(...args);
   };
+  
   const mutate: Mutate<R> = (value) => parallelLatestResult.value.mutate(value);
+
   const refresh = () => parallelLatestResult.value.refresh();
 
   if (!manual) {
@@ -58,7 +61,7 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
     const cacheCurrentParallelKey = cacheData?.currentParallelKey;
     Object.keys(cacheParallelResult).forEach((cpr) => {
       parallelResults[cpr] = <UnwrapRefs<HttpRequestResult<P, R>>>reactive(
-        createHttpRequest<P, R>(query, config, {
+        createCommonFetch<P, R>(curRequest, config, {
           ...cacheParallelResult[cpr],
         }),
       );
@@ -75,17 +78,19 @@ export function useHttp<P extends unknown[], R>(request: HttpRequest<P, R>, opti
   });
 
   // watch refreshDeps
-  // 请求函数需要闭包的形式引用参数
+  // 请求函数需要闭包的形式引用参数 无defaultParams
   refreshDeps?.length &&
     watch(refreshDeps, () => {
       !defaultParams?.length && parallelLatestResult.value.refresh();
     });
+
 
   return {
     load,
     loading,
     error,
     data,
+    params,
     mutate,
     refresh,
     parallelResults,

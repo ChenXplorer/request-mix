@@ -1,4 +1,4 @@
-import { BaseOptions } from './../types/options';
+import { BaseOptions } from '../types/options';
 import { Mutate, Query, State, UnwrapRefs } from '../types/request';
 import { Ref, ref } from 'vue';
 import { HttpRequestResult } from '../types/request';
@@ -6,7 +6,7 @@ import { isFunction, setStateRelation } from '../utils';
 import { CACHE } from '../utils/cache';
 import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME } from '../utils/cons';
 
-export const createHttpRequest = <P extends unknown[], R>(
+export const createCommonFetch = <P extends unknown[], R>(
   query: Query<P, R>,
   option: BaseOptions<P, R>,
   initialData?: Partial<UnwrapRefs<State<P, R>>>,

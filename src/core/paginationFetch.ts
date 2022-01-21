@@ -2,7 +2,7 @@ import { BaseOptions, Pagination } from '../types/options';
 import { HttpRequest } from 'src/types/request';
 import { getByPath, merge } from '../utils';
 import { baseFetch } from './baseFetch';
-import { computed } from 'vue';
+import { computed, ComputedRef } from 'vue';
 export type PaginationOption<P extends unknown[], R> = Omit<BaseOptions<P, R>, 'parallelKey'>;
 
 export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: PaginationOption<P, R>) {
@@ -13,12 +13,13 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
   */
 
   // TODO limit defaultParams as [{}] format
+  // 或者告知 pn ，ps 在 defaultparams 的 index
   const defaultPagination: Pagination = {
-    ...pagination,
     pnKey: 'pn',
     psKey: 'ps',
     totalKey: 'total',
     totalPageKey: 'totalPage',
+    ...pagination,
   };
   const paginationParams = {
     [defaultPagination.pnKey]: 1,
@@ -40,7 +41,6 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
 
   const run = (value: { [key: string]: number }) => {
     // TODO 类型重新定义
-    const a = params.value;
     const [defaultParams, ...rest] = params.value;
     const curParams = [
       {
@@ -52,19 +52,6 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
     load(...curParams);
   };
 
-  const pn = computed({
-    get: () => {},
-    set: () => {},
-  });
-  const ps = computed({
-    get: () => {},
-    set: () => {},
-  });
-  const totalPage = computed(() =>
-    getByPath(data.value!, defaultPagination.totalPageKey, Math.ceil(total.value / ps.value)),
-  );
-  const total = computed(() => getByPath(data.value!, defaultPagination.totalKey, 0));
-
   const change = (value: { pn?: number; ps?: number }) => {
     const changeParams = {};
     value.pn ? (changeParams[defaultPagination.pnKey] = pn) : null;
@@ -72,13 +59,39 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
     run(changeParams);
   };
 
+  // TODO params.value?.[0]类型重新定义
+  const paramsPagination = computed( () => params.value?.[0]) as ComputedRef<Object>
+
+  const pn = computed({
+    get: () => paramsPagination.value?.[defaultPagination.pnKey] ?? paginationOption.defaultParams[0][defaultPagination.pnKey],
+    set: (val:number) => {
+      change({
+        pn:val
+      })
+    },
+  });
+  const ps = computed({
+    get: () => paramsPagination.value?.[defaultPagination.psKey] ?? paginationOption.defaultParams[0][defaultPagination.psKey],
+    set: (val:number) => {
+      change({
+        ps:val
+      })
+    },
+  });
+  const totalPage = computed(() =>
+    getByPath(data.value!, defaultPagination.totalPageKey, Math.ceil(total.value / ps.value)),
+  );
+  const total = computed(() => getByPath(data.value!, defaultPagination.totalKey, 0));
+
+ 
+
   return {
     data,
     load,
     pn,
     ps,
     total,
-    totalSize,
+    totalPage,
     change,
     params,
     ...rest,

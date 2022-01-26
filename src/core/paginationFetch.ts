@@ -13,6 +13,7 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
   */
 
   // TODO limit defaultParams as [{}] format
+  // TODO 支持 offset 查询方式
   // 或者告知 pn ，ps 在 defaultparams 的 index
   const defaultPagination: Pagination = {
     pnKey: 'pn',
@@ -21,7 +22,7 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
     totalPageKey: 'totalPage',
     ...pagination,
   };
-  const paginationParams = {
+  const defaultPaginationParams = {
     [defaultPagination.pnKey]: 1,
     [defaultPagination.psKey]: 10,
   };
@@ -29,8 +30,7 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
     {
       defaultParams: [
         {
-          [defaultPagination.pnKey]: 1,
-          [defaultPagination.psKey]: 10,
+          ...defaultPaginationParams,
         },
       ],
     },
@@ -60,30 +60,30 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
   };
 
   // TODO params.value?.[0]类型重新定义
-  const paramsPagination = computed( () => params.value?.[0]) as ComputedRef<Object>
+  const paramsPagination = computed(() => params.value?.[0]) as ComputedRef<Object>;
 
   const pn = computed({
-    get: () => paramsPagination.value?.[defaultPagination.pnKey] ?? paginationOption.defaultParams[0][defaultPagination.pnKey],
-    set: (val:number) => {
+    get: () =>
+      paramsPagination.value?.[defaultPagination.pnKey] ?? paginationOption.defaultParams[0][defaultPagination.pnKey],
+    set: (val: number) => {
       change({
-        pn:val
-      })
+        pn: val,
+      });
     },
   });
   const ps = computed({
-    get: () => paramsPagination.value?.[defaultPagination.psKey] ?? paginationOption.defaultParams[0][defaultPagination.psKey],
-    set: (val:number) => {
+    get: () =>
+      paramsPagination.value?.[defaultPagination.psKey] ?? paginationOption.defaultParams[0][defaultPagination.psKey],
+    set: (val: number) => {
       change({
-        ps:val
-      })
+        ps: val,
+      });
     },
   });
   const totalPage = computed(() =>
     getByPath(data.value!, defaultPagination.totalPageKey, Math.ceil(total.value / ps.value)),
   );
   const total = computed(() => getByPath(data.value!, defaultPagination.totalKey, 0));
-
- 
 
   return {
     data,

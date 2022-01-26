@@ -3,7 +3,7 @@ import { DEFAULT_PARALLEL_KEY } from '../utils/cons';
 import { computed, reactive, Ref, ref, watch } from 'vue';
 import { HttpRequest, ParallelResults, HttpRequestResult, UnwrapRefs, Mutate } from '../types/request';
 import { createCommonFetch } from './createCommonFetch';
-import { genRequest } from './genRequest';
+import { genRequest } from '../utils/index';
 import { CACHE } from '../utils/cache';
 
 export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {

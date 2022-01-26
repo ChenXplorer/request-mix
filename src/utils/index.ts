@@ -1,5 +1,5 @@
 import { Ref, unref } from 'vue';
-import { State, UnRef, UnwrapRefs } from '../types/request';
+import { HttpRequest, State, UnRef, UnwrapRefs } from '../types/request';
 
 export async function fetchHttp(url: string, options?: Partial<RequestInit>) {
   const res = await fetch(url, options);
@@ -42,6 +42,24 @@ export function isObject(value: any) {
   return type !== null && (type === 'object' || type === 'function');
 }
 
+export function genRequest<P extends unknown[], R>(
+  request: HttpRequest<P, R>,
+): (() => Promise<R>) | ((...args: P) => Promise<R>) {
+  return (...args: P) => {
+    if (isFunction(request)) {
+      return request(...args);
+    }
+    if (isString(request)) {
+      return fetchHttp(request);
+    }
+    if (isPlainObject(request)) {
+      const { url, ...res } = request;
+      return fetchHttp(url, res);
+    }
+    throw throwWarning('unknown request type', true);
+  };
+}
+
 export function merge(source: any, other: any) {
   if (!isObject(source) || !isObject(other)) {
     return other === undefined ? source : other;
@@ -59,7 +77,7 @@ export function merge(source: any, other: any) {
   );
 }
 
-export function getByPath(obj: Object, path: string, def: any) {
+export function getByPath(obj: Object, path: string, def: any = undefined) {
   if (!obj || Object.keys(obj).length === 0) return def;
   const pathArr = path.replace(/\[(\d+)\]/g, '.$1').split('.');
   let result = obj;

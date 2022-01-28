@@ -90,3 +90,11 @@ export function getByPath(obj: Object, path: string, def: any = undefined) {
   }
   return result;
 }
+
+export function isInClient(dom: HTMLElement) {
+  const { top, right, bottom, left } = dom.getBoundingClientRect();
+  const viewWidth = window?.innerWidth || document?.documentElement.clientWidth;
+  const viewHeight = window?.innerHeight || document?.documentElement.clientHeight;
+  const inClient = top >= 0 && left >= 0 && right <= viewWidth && bottom <= viewHeight;
+  return inClient;
+}

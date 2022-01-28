@@ -79,6 +79,7 @@ export function merge(source: any, other: any) {
 
 export function getByPath(obj: Object, path: string, def: any = undefined) {
   if (!obj || Object.keys(obj).length === 0) return def;
+  if (!path) return obj;
   const pathArr = path.replace(/\[(\d+)\]/g, '.$1').split('.');
   let result = obj;
   for (let i = 0; i < pathArr.length; i++) {

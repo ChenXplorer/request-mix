@@ -19,9 +19,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   } = config;
 
   const parallelLatestKey = ref(DEFAULT_PARALLEL_KEY);
-  const parallelResults = <ParallelResults<P, R>>reactive({
-    DEFAULT_PARALLEL_KEY: reactive(createCommonFetch<P, R>(curRequest, config)),
-  });
+  const parallelResults = <ParallelResults<P, R>>reactive({});
   const parallelLatestResult = computed(() => parallelResults[parallelLatestKey.value] ?? {});
   //set latest total state
   const loading = computed(() => parallelLatestResult.value.loading);
@@ -46,7 +44,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     parallelLatestKey.value = currentKey;
     return parallelLatestResult.value.load(...args);
   };
-  
+
   const mutate: Mutate<R> = (value) => parallelLatestResult.value.mutate(value);
 
   const refresh = () => parallelLatestResult.value.refresh();
@@ -70,10 +68,10 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   }
 
   // watch ready
-  const unWatch = watch(ready, (isReady) => {
+  const unWatchReady = watch(ready, (isReady) => {
     if (isReady) {
       load(...readyParams.value);
-      unWatch();
+      unWatchReady();
     }
   });
 
@@ -83,7 +81,6 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     watch(refreshDeps, () => {
       !defaultParams?.length && parallelLatestResult.value.refresh();
     });
-
 
   return {
     load,

@@ -44,8 +44,6 @@ export const createCommonFetch = <P extends unknown[], R>(
   const load = (...args: P) => {
     setState({
       loading: true,
-      error: null,
-      data: null,
       params: args,
     });
     handleLoadingDelay();

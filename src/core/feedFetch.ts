@@ -1,5 +1,5 @@
 import { getByPath, isInClient, merge } from '../utils';
-import { computed, onMounted, onUnmounted, ref, Ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, onUpdated, ref, Ref, watch, watchEffect } from 'vue';
 import { BaseOptions } from '../types/options';
 import { HttpRequest } from '../types/request';
 import { baseFetch } from './baseFetch';
@@ -91,7 +91,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   let feedObserver: IntersectionObserver;
   const loadingDiv = (() => {
     const div = document.createElement('div');
-    div.setAttribute('style', 'position: absolute;bottom:100px;');
+    div.setAttribute('style', 'position: absolute; bottom:100px;');
     return div;
   })();
 

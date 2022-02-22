@@ -7,7 +7,7 @@ export default defineConfig({
   clearScreen: false,
   resolve: {
     alias: {
-      'vue-http-hook': path.resolve(__dirname, '../src/index.ts'),
+      'vue-request-wrapper': path.resolve(__dirname, '../src/index.ts'),
     },
   },
   server: {

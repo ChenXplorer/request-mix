@@ -22,7 +22,7 @@ const RollUpConfig = {
     },
     {
       name: 'VueHttpHook',
-      file: './dist/vue-http-hook.min.js',
+      file: './dist/vue-request-wrapper.min.js',
       format: 'iife',
       exports: 'named',
       extend: true,

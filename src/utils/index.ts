@@ -10,7 +10,7 @@ export async function fetchHttp(url: string, options?: Partial<RequestInit>) {
 }
 
 export const throwWarning = (warning: string, throwOut = false) => {
-  const message = `Warning: vue-http-hook ${warning}`;
+  const message = `Warning: vue-request-wrapper ${warning}`;
   if (throwOut) {
     return new Error(message);
   }

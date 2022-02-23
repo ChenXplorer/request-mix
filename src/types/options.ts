@@ -1,11 +1,10 @@
 import { Ref, WatchSource } from 'vue';
 
 export interface Pagination {
-  pnKey: string
-  psKey:string
-  totalKey:string
-  totalPageKey:string;
-
+  pnKey: string;
+  psKey: string;
+  totalKey: string;
+  totalPageKey: string;
 }
 
 export type BaseOptions<P extends unknown[], R> = Partial<{
@@ -17,5 +16,6 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   cacheTime: number;
   delayLoadingTime: number;
   refreshDeps: WatchSource<any>[];
-  pagination: Partial<Pagination>
+  formatResult: (oldState: R) => any;
+  pagination: Partial<Pagination>;
 }>;

@@ -1,6 +1,6 @@
 {
-  "name": "vue-request-wrapper",
-  "version": "1.0.0",
+  "name": "@bilibili/request-mix",
+  "version": "0.0.1",
   "description": "vue3 http request swr",
   "keywords": [
     "vue",
@@ -13,16 +13,12 @@
     "fetch",
     "composition-api",
     "axios",
-    "vue-request-wrapper",
+    "request-mix",
     "vue http"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xuzhouchen1104/vue-request-wrapper.git"
-  },
   "license": "MIT",
   "main": "dist/index.cjs.js",
-  "unpkg": "dist/vue-request-wrapper.min.js",
+  "unpkg": "dist/request-mix.min.js",
   "module": "dist/index.es.js",
   "types": "dist/types/index.d.ts",
   "files": [
@@ -35,7 +31,7 @@
     "test": "",
     "publishing": "np",
     "changelog": "standard-version && standard-version -i CHANGELOG.zh-CN.md -o CHANGELOG.zh-CN.md",
-    "release": "yarn build && yarn publishing",
+    "release": "npm run build && npm publish",
     "lint": "eslint -c ./.eslintrc.js './{src,scripts,build}/**/*.{js,ts,tsx}'",
     "format": "prettier -w '**/*.ts?(x)'",
     "vite": "vite --config ./build/vite.config.ts"

@@ -7,7 +7,7 @@ export default defineConfig({
   clearScreen: false,
   resolve: {
     alias: {
-      'vue-request-wrapper': path.resolve(__dirname, '../src/index.ts'),
+      'request-mix': path.resolve(__dirname, '../src/index.ts'),
     },
   },
   server: {

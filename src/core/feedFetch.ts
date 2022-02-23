@@ -7,6 +7,8 @@ import { baseFetch } from './baseFetch';
 export type Feed = {
   dataKey: string;
   totalKey: string;
+  total: Ref<number>;
+  noMore: Ref<boolean>;
   increaseKey: string;
   increaseStep: number;
   loadingRef: Ref<HTMLElement | null | undefined>;
@@ -56,13 +58,13 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   });
 
   const data = ref(dataTemp.value) as Ref<R | null | undefined>;
-  const total = ref(0);
+  const total = ref(option.feed?.total?.value ?? 0);
 
   watch(dataTemp, (val) => {
-    val && (total.value = getByPath(val, defaultFeed.totalKey, 0));
+    val && (total.value = option.feed?.total?.value ?? getByPath(val, defaultFeed.totalKey, 0));
   });
 
-  const noMore = computed(() => list.value.length >= total.value);
+  const noMore = computed(() => option.feed?.noMore?.value ?? list.value.length >= total.value);
 
   const loadMore = () => {
     if (noMore.value) return;

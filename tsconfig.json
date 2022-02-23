@@ -14,7 +14,7 @@
     "baseUrl": "./",
     "types": ["jest", "@vue/test-utils"],
     "paths": {
-      "vue-request-wrapper": ["src/index.ts"]
+      "request-mix": ["src/index.ts"]
     }
   },
   "include": ["src", "example", "**/__tests__/**/*"],

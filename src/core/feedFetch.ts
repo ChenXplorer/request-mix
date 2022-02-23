@@ -1,5 +1,5 @@
 import { getByPath, isInClient, merge } from '../utils';
-import { computed, onMounted, onUnmounted, onUpdated, ref, Ref, watch, watchEffect } from 'vue';
+import { computed, onMounted, onUnmounted, nextTick, onUpdated, ref, Ref, watch, watchEffect } from 'vue';
 import { BaseOptions } from '../types/options';
 import { HttpRequest } from '../types/request';
 import { baseFetch } from './baseFetch';
@@ -8,6 +8,7 @@ export type Feed = {
   dataKey: string;
   totalKey: string;
   total: Ref<number>;
+  loadingOffset: number;
   noMore: Ref<boolean>;
   increaseKey: string;
   increaseStep: number;
@@ -24,6 +25,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     dataKey: '',
     totalKey: 'total',
     increaseKey: 'pn',
+    loadingOffset: 100,
     increaseStep: 1,
     ...feed,
   };
@@ -91,9 +93,10 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
 
   // observer dom to load more auto
   let feedObserver: IntersectionObserver;
+  let observerMutation: MutationObserver;
   const loadingDiv = (() => {
     const div = document.createElement('div');
-    div.setAttribute('style', 'position: absolute; bottom:100px;');
+    div.setAttribute('style', `position: absolute; bottom:${defaultFeed.loadingOffset}px;`);
     return div;
   })();
 
@@ -107,13 +110,26 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
         loadMore();
       });
       feedObserver.observe(loadingDiv);
+
       // Is it necessary to fill first load screen
+      observerMutation = new MutationObserver(async () => {
+        await nextTick();
+        if (!loading.value && isInClient(loadingDiv)) {
+          loadMore();
+        }
+      });
+      observerMutation.observe(option?.feed?.containerRef?.value, {
+        childList: true,
+      });
     }
   });
   onUnmounted(() => {
     if (feedObserver) {
       feedObserver.unobserve(loadingDiv);
       feedObserver.disconnect();
+    }
+    if (observerMutation) {
+      observerMutation.disconnect();
     }
   });
 

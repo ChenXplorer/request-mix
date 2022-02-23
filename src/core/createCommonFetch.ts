@@ -50,7 +50,7 @@ export const createCommonFetch = <P extends unknown[], R>(
 
     return query(...args)
       .then((res) => {
-        const result = res;
+        const result = option?.formatData ? option?.formatData(res) : res;
         setState({
           data: result,
           loading: false,

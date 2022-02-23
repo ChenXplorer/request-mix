@@ -1,6 +1,6 @@
 {
   "name": "@bilibili/request-mix",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "vue3 http request swr",
   "keywords": [
     "vue",

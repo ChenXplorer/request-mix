@@ -1,7 +1,7 @@
 import { isSSR } from './../utils/index';
 import { BaseOptions } from '../types/options';
 import { HttpRequest, Mutate, Query, State, UnwrapRefs } from '../types/request';
-import { Ref, ref } from 'vue';
+import { Ref, ref, onServerPrefetch } from 'vue';
 import { HttpRequestResult } from '../types/request';
 import { generateRequestKey, genRequest, isFunction, setStateRelation } from '../utils';
 import { CACHE } from '../utils/cache';
@@ -40,43 +40,49 @@ export const createCommonFetch = <P extends unknown[], R>(
   const loadingDelayTimer = ref();
   const handleLoadingDelay = () => {
     if (option?.delayLoadingTime) {
-      loadingDelayTimer.value = setTimeout(setState, option?.delayLoadingTime, { loading: true });
+      loadingDelayTimer.value = setTimeout(setState, option?.delayLoadingTime, {
+        loading: true,
+      });
     }
   };
 
-  const handleSSRCache = (...args: P) => {
-    if (isSSR) {
-      console.log(generateRequestKey(request, args));
-    }
+  const handleSSRRequest = (...args: P) => {
+    onServerPrefetch(async () => {
+      await loadHandler(...args);
+    });
   };
 
-  const load = (...args: P) => {
-    handleSSRCache(...args);
+  const loadHandler = async (...args: P) => {
     setState({
       loading: true,
       params: args,
     });
     handleLoadingDelay();
-
-    return query(...args)
-      .then((res) => {
-        const result = option?.formatData ? option?.formatData(res) : res;
-        setState({
-          data: result,
-          loading: false,
-          error: null,
-        });
-      })
-      .catch((error) => {
-        setState({
-          data: null,
-          loading: false,
-          error: error,
-        });
-      })
-      .finally(() => {
-        loadingDelayTimer && clearTimeout(loadingDelayTimer.value);
+    try {
+      const res = await query(...args);
+      const result = option?.formatData ? option?.formatData(res) : res;
+      setState({
+        data: result,
+        loading: false,
+        error: null,
       });
+    } catch (error: any) {
+      setState({
+        data: null,
+        loading: false,
+        error: error,
+      });
+    } finally {
+      loadingDelayTimer.value && clearTimeout(loadingDelayTimer.value);
+    }
+  };
+
+  const load = (...args: P) => {
+    if (isSSR && option.SSR) {
+      handleSSRRequest(...args);
+      return Promise.resolve();
+    }
+    return loadHandler(...args);
   };
 
   const mutate: Mutate<R> = (value) => {

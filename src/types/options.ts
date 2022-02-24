@@ -14,6 +14,7 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   ready: Ref<Boolean>;
   cacheKey: string;
   cacheTime: number;
+  SSR: boolean;
   formatData: (oldState: R) => any;
   delayLoadingTime: number;
   refreshDeps: WatchSource<any>[];

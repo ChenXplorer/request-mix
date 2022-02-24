@@ -1,13 +1,14 @@
+import { isSSR } from './../utils/index';
 import { BaseOptions } from '../types/options';
-import { Mutate, Query, State, UnwrapRefs } from '../types/request';
+import { HttpRequest, Mutate, Query, State, UnwrapRefs } from '../types/request';
 import { Ref, ref } from 'vue';
 import { HttpRequestResult } from '../types/request';
-import { isFunction, setStateRelation } from '../utils';
+import { generateRequestKey, genRequest, isFunction, setStateRelation } from '../utils';
 import { CACHE } from '../utils/cache';
 import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME } from '../utils/cons';
 
 export const createCommonFetch = <P extends unknown[], R>(
-  query: Query<P, R>,
+  request: HttpRequest<P, R>,
   option: BaseOptions<P, R>,
   initialData?: Partial<UnwrapRefs<State<P, R>>>,
 ): HttpRequestResult<P, R> => {
@@ -15,6 +16,8 @@ export const createCommonFetch = <P extends unknown[], R>(
   const error = ref(initialData?.error ?? null);
   const data = <Ref<R>>ref(initialData?.data ?? null);
   const params = <Ref<P>>ref(initialData?.params ?? null);
+
+  const query = genRequest<P, R>(request);
 
   const setState = setStateRelation<P, R>(
     {
@@ -41,7 +44,14 @@ export const createCommonFetch = <P extends unknown[], R>(
     }
   };
 
+  const handleSSRCache = (...args: P) => {
+    if (isSSR) {
+      console.log(generateRequestKey(request, args));
+    }
+  };
+
   const load = (...args: P) => {
+    handleSSRCache(...args);
     setState({
       loading: true,
       params: args,

@@ -7,7 +7,6 @@ import { genRequest } from '../utils/index';
 import { CACHE } from '../utils/cache';
 
 export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
-  const curRequest = genRequest<P, R>(request);
   const config = options ?? {};
   const {
     defaultParams = ([] as unknown) as P,
@@ -38,7 +37,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     const currentKey = parallelKey?.(...args) ?? DEFAULT_PARALLEL_KEY;
     if (!parallelResults[currentKey]) {
       parallelResults[currentKey] = <UnwrapRefs<HttpRequestResult<P, R>>>(
-        reactive(createCommonFetch<P, R>(curRequest, config))
+        reactive(createCommonFetch<P, R>(request, config))
       );
     }
     parallelLatestKey.value = currentKey;
@@ -59,7 +58,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     const cacheCurrentParallelKey = cacheData?.currentParallelKey;
     Object.keys(cacheParallelResult).forEach((cpr) => {
       parallelResults[cpr] = <UnwrapRefs<HttpRequestResult<P, R>>>reactive(
-        createCommonFetch<P, R>(curRequest, config, {
+        createCommonFetch<P, R>(request, config, {
           ...cacheParallelResult[cpr],
         }),
       );

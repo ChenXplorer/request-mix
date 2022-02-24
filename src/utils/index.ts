@@ -106,3 +106,5 @@ export function generateRequestKey(request: any, option: any = {}) {
     option,
   });
 }
+
+export const isSSR: boolean = typeof window === 'undefined';

@@ -94,14 +94,15 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   // observer dom to load more auto
   let feedObserver: IntersectionObserver;
   let observerMutation: MutationObserver;
-  const loadingDiv = (() => {
-    const div = document.createElement('div');
-    div.setAttribute('style', `position: absolute; bottom:${defaultFeed.loadingOffset}px;`);
-    return div;
-  })();
+  let loadingDiv: HTMLElement;
 
   onMounted(() => {
     const containerEl = option?.feed?.containerRef?.value;
+    loadingDiv = (() => {
+      const div = document.createElement('div');
+      div.setAttribute('style', `position: absolute; bottom:${defaultFeed.loadingOffset}px;`);
+      return div;
+    })();
     if (containerEl) {
       containerEl.style.position = 'relative';
       containerEl.appendChild(loadingDiv);
@@ -118,7 +119,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
           loadMore();
         }
       });
-      observerMutation.observe(option?.feed?.containerRef?.value, {
+      observerMutation.observe(option?.feed?.containerRef?.value as Node, {
         childList: true,
       });
     }

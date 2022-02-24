@@ -1,5 +1,6 @@
 import { Ref, unref } from 'vue';
 import { HttpRequest, State, UnRef, UnwrapRefs } from '../types/request';
+import serialize from './serialize';
 
 export async function fetchHttp(url: string, options?: Partial<RequestInit>) {
   const res = await fetch(url, options);
@@ -97,4 +98,11 @@ export function isInClient(dom: HTMLElement) {
   const viewHeight = window?.innerHeight || document?.documentElement.clientHeight;
   const inClient = top >= 0 && left >= 0 && right <= viewWidth && bottom <= viewHeight;
   return inClient;
+}
+
+export function generateRequestKey(request: any, option: any = {}) {
+  return serialize({
+    request,
+    option,
+  });
 }

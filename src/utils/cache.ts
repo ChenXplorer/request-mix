@@ -57,3 +57,5 @@ class CacheMap {
 }
 
 export const CACHE = new CacheMap();
+
+export const HTTP_CACHE_SSR = new CacheMap();

@@ -49,7 +49,9 @@ export const createCommonFetch = <P extends unknown[], R>(
   const handleSSRRequest = (...args: P) => {
     onServerPrefetch(async () => {
       await loadHandler(...args);
-      HTTP_CACHE_SSR.set(generateRequestKey(option.SSR, args), data.value);
+      if (option.asyncDataKey) {
+        HTTP_CACHE_SSR.set(generateRequestKey(option.asyncDataKey, args), data.value);
+      }
     });
   };
 
@@ -83,8 +85,8 @@ export const createCommonFetch = <P extends unknown[], R>(
       handleSSRRequest(...args);
       return Promise.resolve();
     }
-    if (!isSSR) {
-      const SSRCachedKey = generateRequestKey(option.SSR, args);
+    if (!isSSR && option.asyncDataKey) {
+      const SSRCachedKey = generateRequestKey(option.asyncDataKey, args);
       const CSRMap = (window as any)[SSR_DATA];
       const cacheData = CSRMap?.get(SSRCachedKey);
       if (cacheData) {
@@ -93,8 +95,8 @@ export const createCommonFetch = <P extends unknown[], R>(
           data: cacheData,
         });
         CSRMap.delete(SSRCachedKey);
+        return Promise.resolve();
       }
-      return Promise.resolve();
     }
     return loadHandler(...args);
   };

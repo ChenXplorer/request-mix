@@ -1,11 +1,11 @@
-import { isSSR } from './../utils/index';
+import { generateRequestKey, isSSR } from './../utils/index';
 import { BaseOptions } from '../types/options';
 import { HttpRequest, Mutate, Query, State, UnwrapRefs } from '../types/request';
 import { Ref, ref, onServerPrefetch } from 'vue';
 import { HttpRequestResult } from '../types/request';
-import { generateRequestKey, genRequest, isFunction, setStateRelation } from '../utils';
-import { CACHE } from '../utils/cache';
-import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME } from '../utils/cons';
+import { genRequest, isFunction, setStateRelation } from '../utils';
+import { CACHE, HTTP_CACHE_SSR } from '../utils/cache';
+import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME, SSR_DATA } from '../utils/cons';
 
 export const createCommonFetch = <P extends unknown[], R>(
   request: HttpRequest<P, R>,
@@ -49,6 +49,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   const handleSSRRequest = (...args: P) => {
     onServerPrefetch(async () => {
       await loadHandler(...args);
+      HTTP_CACHE_SSR.set(generateRequestKey(option.SSR, args), data.value);
     });
   };
 
@@ -80,6 +81,19 @@ export const createCommonFetch = <P extends unknown[], R>(
   const load = (...args: P) => {
     if (isSSR && option.SSR) {
       handleSSRRequest(...args);
+      return Promise.resolve();
+    }
+    if (!isSSR) {
+      const SSRCachedKey = generateRequestKey(option.SSR, args);
+      const CSRMap = (window as any)[SSR_DATA];
+      const cacheData = CSRMap?.get(SSRCachedKey);
+      if (cacheData) {
+        setState({
+          params: args,
+          data: cacheData,
+        });
+        CSRMap.delete(SSRCachedKey);
+      }
       return Promise.resolve();
     }
     return loadHandler(...args);

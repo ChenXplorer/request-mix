@@ -100,9 +100,9 @@ export function isInClient(dom: HTMLElement) {
   return inClient;
 }
 
-export function generateRequestKey(request: any, option: any = {}) {
+export function generateRequestKey(key: any, option: any = {}) {
   return serialize({
-    request,
+    key,
     option,
   });
 }

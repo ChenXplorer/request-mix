@@ -110,21 +110,27 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
         if (entries[0].intersectionRatio <= 0) return;
         loadMore();
       });
-      feedObserver.observe(loadingDiv);
-
       // Is it necessary to fill first load screen
       observerMutation = new MutationObserver(async () => {
         await nextTick();
-        if (!loading.value && isInClient(loadingDiv)) {
+        const inClient = isInClient(loadingDiv);
+        if (!loading.value && inClient) {
           loadMore();
+        } else if (!inClient) {
+          observerMutation.disconnect();
         }
       });
-      observerMutation.observe(option?.feed?.containerRef?.value as Node, {
-        childList: true,
-      });
+      observeEvents();
     }
   });
-  onUnmounted(() => {
+
+  function observeEvents() {
+    feedObserver.observe(loadingDiv);
+    observerMutation.observe(option?.feed?.containerRef?.value as Node, {
+      childList: true,
+    });
+  }
+  function unobserveEvents() {
     if (feedObserver) {
       feedObserver.unobserve(loadingDiv);
       feedObserver.disconnect();
@@ -132,6 +138,9 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     if (observerMutation) {
       observerMutation.disconnect();
     }
+  }
+  onUnmounted(() => {
+    unobserveEvents();
   });
 
   return {
@@ -144,5 +153,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     params,
     loadMore,
     refresh,
+    unobserveEvents,
+    observeEvents,
   };
 }

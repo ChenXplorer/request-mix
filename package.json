@@ -1,6 +1,6 @@
 {
   "name": "@bilibili/request-mix",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "description": "vue3 http request swr",
   "keywords": [
     "vue",
@@ -85,7 +85,6 @@
     "vite": "^2.1.5",
     "faker": "^5.5.3",
     "@babel/plugin-proposal-class-properties": "^7.16.7",
-
     "vue": "^3.0.2"
   },
   "peerDependencies": {

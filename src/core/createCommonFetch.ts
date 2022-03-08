@@ -63,7 +63,7 @@ export const createCommonFetch = <P extends unknown[], R>(
 
   const loadHandler = async (...args: P) => {
     setState({
-      loading: !option?.delayLoadingTime || option?.delayLoadingTime > 0,
+      loading: (option?.delayLoadingTime || 0) > 0,
       params: args,
     });
     handleLoadingDelay();

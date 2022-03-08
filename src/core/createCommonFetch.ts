@@ -39,10 +39,16 @@ export const createCommonFetch = <P extends unknown[], R>(
   // 2. 延迟loading = false
   const loadingDelayTimer = ref();
   const handleLoadingDelay = () => {
-    if (option?.delayLoadingTime) {
-      loadingDelayTimer.value = setTimeout(setState, option?.delayLoadingTime, {
-        loading: true,
-      });
+    if (option.delayLoadingTime) {
+      if (option.delayLoadingTime < 0) {
+        loadingDelayTimer.value = setTimeout(setState, -option.delayLoadingTime, {
+          loading: true,
+        });
+      } else {
+        setTimeout(setState, option.delayLoadingTime, {
+          loading: false,
+        });
+      }
     }
   };
 
@@ -57,7 +63,7 @@ export const createCommonFetch = <P extends unknown[], R>(
 
   const loadHandler = async (...args: P) => {
     setState({
-      loading: true,
+      loading: !option?.delayLoadingTime || option?.delayLoadingTime > 0,
       params: args,
     });
     handleLoadingDelay();
@@ -66,13 +72,13 @@ export const createCommonFetch = <P extends unknown[], R>(
       const result = option?.formatData ? option?.formatData(res) : res;
       setState({
         data: result,
-        loading: false,
+        loading: (option.delayLoadingTime || 0) > 0,
         error: null,
       });
     } catch (error: any) {
       setState({
         data: null,
-        loading: false,
+        loading: (option.delayLoadingTime || 0) > 0,
         error: error,
       });
     } finally {

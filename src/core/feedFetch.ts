@@ -13,7 +13,7 @@ export type Feed = {
   increaseKey: string;
   increaseStep: number;
   loadingRef: Ref<HTMLElement | null | undefined>;
-  containerRef: Ref<HTMLElement | null | undefined>;
+  containerRef: Ref<any>;
 };
 
 export type FeedOption<P extends unknown[], R> = Omit<BaseOptions<P, R>, 'parallelKey'> & { feed: Partial<Feed> };
@@ -97,7 +97,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   let loadingDiv: HTMLElement;
 
   onMounted(() => {
-    const containerEl = option?.feed?.containerRef?.value;
+    const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     loadingDiv = (() => {
       const div = document.createElement('div');
       div.setAttribute('style', `position: absolute; bottom:${defaultFeed.loadingOffset}px;`);
@@ -125,8 +125,9 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   });
 
   function observeEvents() {
+    const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     feedObserver.observe(loadingDiv);
-    observerMutation.observe(option?.feed?.containerRef?.value as Node, {
+    observerMutation.observe(containerEl as Node, {
       childList: true,
     });
   }

@@ -38,6 +38,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   // 1. 延迟loading = true ✅
   // 2. 延迟loading = false
   const loadingDelayTimer = ref();
+  const currentLoadingTime = ref();
   const handleLoadingDelay = () => {
     if (option.delayLoadingTime) {
       if (option.delayLoadingTime < 0) {
@@ -45,9 +46,7 @@ export const createCommonFetch = <P extends unknown[], R>(
           loading: true,
         });
       } else {
-        setTimeout(setState, option.delayLoadingTime, {
-          loading: false,
-        });
+        currentLoadingTime.value = new Date().getTime();
       }
     }
   };
@@ -63,18 +62,32 @@ export const createCommonFetch = <P extends unknown[], R>(
 
   const loadHandler = async (...args: P) => {
     setState({
-      loading: true,
+      loading: (option.delayLoadingTime || 1) > 0, // 原本为true 负延时的话就是false
       params: args,
     });
-    // handleLoadingDelay();
+    handleLoadingDelay();
     try {
       const res = await query(...args);
       const result = option?.formatData ? option?.formatData(res) : res;
-      setState({
-        data: result,
-        loading: false,
-        error: null,
-      });
+      let diff = -1;
+      if (option.delayLoadingTime && option.delayLoadingTime > 0 && !isSSR) {
+        diff = option.delayLoadingTime - (new Date().getTime() - currentLoadingTime.value);
+      }
+      if (diff > 0) {
+        setTimeout(() => {
+          setState({
+            data: result,
+            loading: false,
+            error: null,
+          });
+        }, diff);
+      } else {
+        setState({
+          data: result,
+          loading: false,
+          error: null,
+        });
+      }
     } catch (error: any) {
       setState({
         data: null,

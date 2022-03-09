@@ -63,22 +63,22 @@ export const createCommonFetch = <P extends unknown[], R>(
 
   const loadHandler = async (...args: P) => {
     setState({
-      loading: (option?.delayLoadingTime || 0) > 0,
+      loading: true,
       params: args,
     });
-    handleLoadingDelay();
+    // handleLoadingDelay();
     try {
       const res = await query(...args);
       const result = option?.formatData ? option?.formatData(res) : res;
       setState({
         data: result,
-        loading: (option.delayLoadingTime || 0) > 0,
+        loading: false,
         error: null,
       });
     } catch (error: any) {
       setState({
         data: null,
-        loading: (option.delayLoadingTime || 0) > 0,
+        loading: false,
         error: error,
       });
     } finally {

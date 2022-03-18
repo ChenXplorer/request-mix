@@ -70,7 +70,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
 
   const loadMore = () => {
     if (noMore.value) return;
-    const pre = (params.value[0] as Object)?.[defaultFeed.increaseKey] as number;
+    const pre = ((params.value?.[0] as Object)?.[defaultFeed.increaseKey] || 0) as number;
     const cur = pre + defaultFeed.increaseStep;
     const curParams = merge(params.value, [
       {

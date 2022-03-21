@@ -108,7 +108,9 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
       containerEl.appendChild(loadingDiv);
       feedObserver = new IntersectionObserver((entries) => {
         if (entries[0].intersectionRatio <= 0) return;
-        loadMore();
+        if (!loading.value) {
+          loadMore();
+        }
       });
       // Is it necessary to fill first load screen
       observerMutation = new MutationObserver(async () => {

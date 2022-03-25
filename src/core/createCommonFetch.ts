@@ -60,6 +60,14 @@ export const createCommonFetch = <P extends unknown[], R>(
     });
   };
 
+  const syncSetTimeout = (cb: Function, time: number) =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        cb();
+        resolve(null);
+      }, time);
+    });
+
   const loadHandler = async (...args: P) => {
     setState({
       loading: (option.delayLoadingTime || 1) > 0, // 原本为true 负延时的话就是false
@@ -74,7 +82,7 @@ export const createCommonFetch = <P extends unknown[], R>(
         diff = option.delayLoadingTime - (new Date().getTime() - currentLoadingTime.value);
       }
       if (diff > 0) {
-        setTimeout(() => {
+        await syncSetTimeout(() => {
           setState({
             data: result,
             loading: false,

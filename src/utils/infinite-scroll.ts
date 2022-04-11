@@ -52,7 +52,7 @@ const getScrollContainer = (el: HTMLElement, isVertical = true): Window | HTMLEl
 
   let parent: HTMLElement = el;
   while (parent) {
-    if ([window, document, document.documentElement].includes(parent)) {
+    if ([window, document, document.body, document.documentElement].includes(parent)) {
       return window;
     }
     if (isScroll(parent, isVertical)) {

@@ -56,8 +56,8 @@ class CacheMap {
   }
 }
 
-export const CACHE = new CacheMap();
+const CACHE = new CacheMap();
 
 const HTTP_CACHE_SSR = new Map<any, any>();
 
-export { HTTP_CACHE_SSR };
+export { HTTP_CACHE_SSR,CACHE };

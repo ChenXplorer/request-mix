@@ -21,3 +21,16 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   refreshDeps: WatchSource<any>[];
   pagination: Partial<Pagination>;
 }>;
+
+export type Feed = {
+  dataKey: string;
+  totalKey: string;
+  total: Ref<number>;
+  loadingOffset: number;
+  noMore: Ref<boolean>;
+  increaseKey: string;
+  increaseStep: number;
+  scrollThrottle: number;
+  scrollCheckFull: Boolean;
+  containerRef: Ref<any>;
+};

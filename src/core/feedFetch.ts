@@ -1,20 +1,9 @@
 import { getByPath, isInClient, merge } from '../utils';
-import { computed, onMounted, onUnmounted, nextTick, onUpdated, ref, Ref, watch, watchEffect } from 'vue';
-import { BaseOptions } from '../types/options';
+import { computed, onMounted, onUnmounted, nextTick, ref, Ref, watch, watchEffect } from 'vue';
+import { BaseOptions, Feed } from '../types/options';
 import { HttpRequest } from '../types/request';
 import { baseFetch } from './baseFetch';
-
-export type Feed = {
-  dataKey: string;
-  totalKey: string;
-  total: Ref<number>;
-  loadingOffset: number;
-  noMore: Ref<boolean>;
-  increaseKey: string;
-  increaseStep: number;
-  loadingRef: Ref<HTMLElement | null | undefined>;
-  containerRef: Ref<any>;
-};
+import { onScroll } from '../utils/infinite-scroll';
 
 export type FeedOption<P extends unknown[], R> = Omit<BaseOptions<P, R>, 'parallelKey'> & { feed: Partial<Feed> };
 
@@ -25,6 +14,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     dataKey: '',
     totalKey: 'total',
     increaseKey: 'pn',
+    scrollCheckFull: true,
     loadingOffset: 100,
     increaseStep: 1,
     ...feed,
@@ -92,58 +82,17 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   };
 
   // observer dom to load more auto
-  let feedObserver: IntersectionObserver;
-  let observerMutation: MutationObserver;
-  let loadingDiv: HTMLElement;
+  let destroyObserver: Function;
 
   onMounted(() => {
     const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
-    loadingDiv = (() => {
-      const div = document.createElement('div');
-      div.setAttribute('style', `position: absolute; bottom:${defaultFeed.loadingOffset}px;`);
-      return div;
-    })();
     if (containerEl) {
-      containerEl.style.position = 'relative';
-      containerEl.appendChild(loadingDiv);
-      feedObserver = new IntersectionObserver((entries) => {
-        if (entries[0].intersectionRatio <= 0) return;
-        if (!loading.value) {
-          loadMore();
-        }
-      });
-      // Is it necessary to fill first load screen
-      observerMutation = new MutationObserver(async () => {
-        await nextTick();
-        const inClient = isInClient(loadingDiv);
-        if (!loading.value && inClient) {
-          loadMore();
-        } else if (!inClient) {
-          observerMutation.disconnect();
-        }
-      });
-      observeEvents();
+      destroyObserver = onScroll(defaultFeed, loadMore, loading)!;
     }
   });
 
-  function observeEvents() {
-    const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
-    feedObserver.observe(loadingDiv);
-    observerMutation.observe(containerEl as Node, {
-      childList: true,
-    });
-  }
-  function unobserveEvents() {
-    if (feedObserver) {
-      feedObserver.unobserve(loadingDiv);
-      feedObserver.disconnect();
-    }
-    if (observerMutation) {
-      observerMutation.disconnect();
-    }
-  }
   onUnmounted(() => {
-    unobserveEvents();
+    destroyObserver?.();
   });
 
   return {
@@ -156,7 +105,5 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     params,
     loadMore,
     refresh,
-    unobserveEvents,
-    observeEvents,
   };
 }

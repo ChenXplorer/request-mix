@@ -91,8 +91,13 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     }
   });
 
-  onUnmounted(() => {
+  const unobserveEvents = () => {
     destroyObserver?.();
+
+  }
+
+  onUnmounted(() => {
+    unobserveEvents()
   });
 
   return {
@@ -103,6 +108,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     total,
     noMore,
     params,
+    unobserveEvents,
     loadMore,
     refresh,
   };

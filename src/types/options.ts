@@ -17,6 +17,10 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   SSR: boolean;
   asyncDataKey: string;
   formatData: (oldState: R) => any;
+  onSuccess?: (data: R, params: P) => void;
+  onError?: (error: Error, params: P) => void;
+  onBefore?: (params: P) => void;
+  onAfter?: (params: P) => void;
   delayLoadingTime: number;
   refreshDeps: WatchSource<any>[];
   pagination: Partial<Pagination>;

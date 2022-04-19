@@ -111,6 +111,9 @@ export const createCommonFetch = <P extends unknown[], R>(
           error: null,
         });
       }
+      if (option?.onSuccess) {
+        option.onSuccess(result, args);
+      }
     } catch (error: any) {
       setState({
         data: null,
@@ -118,12 +121,18 @@ export const createCommonFetch = <P extends unknown[], R>(
         error: error,
         nothing: false,
       });
+      if (option?.onError) {
+        option?.onError(error, args);
+      }
     } finally {
       loadingDelayTimer.value && clearTimeout(loadingDelayTimer.value);
+      option?.onAfter?.(args);
     }
   };
 
   const load = (...args: P) => {
+    // onBefore hooks
+    option?.onBefore?.(args);
     if (isSSR && option.SSR) {
       handleSSRRequest(...args);
       return Promise.resolve();

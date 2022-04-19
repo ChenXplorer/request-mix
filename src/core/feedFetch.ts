@@ -55,7 +55,8 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     if (values?.length) {
       const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
       const val = getByPath(values[0].data!, dadaKey);
-      return val?.length === 0;
+      const result = Object.keys(val || []);
+      return result.length === 0;
     }
     return false;
   });

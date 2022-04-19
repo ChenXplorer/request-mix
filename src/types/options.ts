@@ -1,4 +1,4 @@
-import { Ref, WatchSource } from 'vue';
+import { Ref, WatchSource, ComputedRef } from 'vue';
 
 export interface Pagination {
   pnKey: string;
@@ -23,8 +23,8 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
 }>;
 
 export type Feed = {
-  dataKey: string;
-  totalKey: string;
+  dataKey: string | Ref<string> | ComputedRef<string>;
+  totalKey: string | Ref<string> | ComputedRef<string>;
   total: Ref<number>;
   loadingOffset: number;
   noMore: Ref<boolean>;

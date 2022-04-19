@@ -11,6 +11,7 @@ export type HttpRequest<P extends unknown[], R> = HttpFunc<P, R> | string | Http
 
 export type State<P extends unknown[], R> = {
   loading: Ref<boolean>;
+  nothing: Ref<boolean>;
   data: Ref<R | undefined | null>;
   error: Ref<Error | undefined | null>;
   params: Ref<P>;

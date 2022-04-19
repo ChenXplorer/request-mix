@@ -43,17 +43,28 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   // tips: Object.keys Object.values ans so on will sort auto by key
   const list = computed(() => {
     const res = Object.values(parallelResults).reduce((pre, cur) => {
-      const val = getByPath(cur.data!, defaultFeed.dataKey);
+      const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
+      const val = getByPath(cur.data!, dadaKey);
       return val && Array.isArray(val) ? pre.concat(val) : pre;
-    }, [] as any[]);
+    }, [] as R[]);
     return res;
   });
 
-  const data = ref(dataTemp.value) as Ref<R | null | undefined>;
-  const total = ref(option.feed?.total?.value ?? 0);
+  const nothing = computed(() => {
+    const values = Object.values(parallelResults);
+    if (values?.length) {
+      const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
+      const val = getByPath(values[0].data!, dadaKey);
+      return val?.length === 0;
+    }
+    return false;
+  });
+
+  const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);
 
   watch(dataTemp, (val) => {
-    val && (total.value = option.feed?.total?.value ?? getByPath(val, defaultFeed.totalKey, 0));
+    const key = typeof defaultFeed.totalKey === 'string' ? defaultFeed.totalKey : defaultFeed.totalKey.value;
+    val && (total.value = option.feed?.total?.value ?? getByPath(val, key, 0));
   });
 
   const noMore = computed(() => option.feed?.noMore?.value ?? list.value.length >= total.value);
@@ -71,45 +82,47 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   };
 
   const refresh = () => {
-    const firstKey = Object.keys(parallelResults)?.[0];
-    Object.keys(parallelResults)
-      .slice(1)
-      .forEach((key) => {
-        delete parallelResults[key];
-      });
-
-    load(...parallelResults[firstKey].params);
+    Object.keys(parallelResults).forEach((key) => {
+      delete parallelResults[key];
+    });
+    const params = feedOption?.defaultParams as P;
+    unobserveEvents();
+    load(...params);
+    observerEvents();
   };
 
   // observer dom to load more auto
   let destroyObserver: Function;
 
-  onMounted(() => {
+  const observerEvents = () => {
     const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     if (containerEl) {
       destroyObserver = onScroll(defaultFeed, loadMore, loading)!;
     }
-  });
-
+  };
   const unobserveEvents = () => {
     destroyObserver?.();
+  };
 
-  }
+  onMounted(() => {
+    observerEvents();
+  });
 
   onUnmounted(() => {
-    unobserveEvents()
+    unobserveEvents();
   });
 
   return {
     ...rest,
     list,
     loading,
-    data,
+    data: dataTemp,
     total,
     noMore,
+    nothing,
     params,
-    unobserveEvents,
     loadMore,
     refresh,
+    unobserveEvents,
   };
 }

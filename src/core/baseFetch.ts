@@ -22,6 +22,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   const parallelLatestResult = computed(() => parallelResults[parallelLatestKey.value] ?? {});
   //set latest total state
   const loading = computed(() => parallelLatestResult.value.loading);
+  const nothing = computed(() => parallelLatestResult.value.nothing);
   const error = computed(() => parallelLatestResult.value.error);
   const data = computed(() => parallelLatestResult.value.data);
   const params = computed(() => parallelLatestResult.value.params);
@@ -86,6 +87,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     loading,
     error,
     data,
+    nothing,
     params,
     mutate,
     refresh,

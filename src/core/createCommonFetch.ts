@@ -13,6 +13,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   initialData?: Partial<UnwrapRefs<State<P, R>>>,
 ): HttpRequestResult<P, R> => {
   const loading = ref(initialData?.loading ?? false);
+  const nothing = ref(initialData?.nothing ?? false);
   const error = ref(initialData?.error ?? null);
   const data = <Ref<R>>ref(initialData?.data ?? null);
   const params = <Ref<P>>ref(initialData?.params ?? null);
@@ -22,6 +23,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   const setState = setStateRelation<P, R>(
     {
       loading,
+      nothing,
       error,
       data,
       params,
@@ -51,6 +53,16 @@ export const createCommonFetch = <P extends unknown[], R>(
     }
   };
 
+  const judgeNone = (res: any) => {
+    let noResult = false;
+    if (Array.isArray(res)) {
+      noResult = res.length === 0;
+    } else {
+      noResult = !res;
+    }
+    return noResult;
+  };
+
   const handleSSRRequest = (...args: P) => {
     onServerPrefetch(async () => {
       await loadHandler(...args);
@@ -76,7 +88,8 @@ export const createCommonFetch = <P extends unknown[], R>(
     handleLoadingDelay();
     try {
       const res = await query(...args);
-      const result = option?.formatData ? option?.formatData(res) : res;
+      const result = option?.formatData ? await option?.formatData(res) : res;
+      const isNothing = judgeNone(result);
       let diff = -1;
       if (option.delayLoadingTime && option.delayLoadingTime > 0 && !isSSR) {
         diff = option.delayLoadingTime - (new Date().getTime() - currentLoadingTime.value);
@@ -85,6 +98,7 @@ export const createCommonFetch = <P extends unknown[], R>(
         await syncSetTimeout(() => {
           setState({
             data: result,
+            nothing: isNothing,
             loading: false,
             error: null,
           });
@@ -92,6 +106,7 @@ export const createCommonFetch = <P extends unknown[], R>(
       } else {
         setState({
           data: result,
+          nothing: isNothing,
           loading: false,
           error: null,
         });
@@ -101,6 +116,7 @@ export const createCommonFetch = <P extends unknown[], R>(
         data: null,
         loading: false,
         error: error,
+        nothing: false,
       });
     } finally {
       loadingDelayTimer.value && clearTimeout(loadingDelayTimer.value);
@@ -142,6 +158,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   return {
     loading,
     error,
+    nothing,
     params,
     data,
     load,

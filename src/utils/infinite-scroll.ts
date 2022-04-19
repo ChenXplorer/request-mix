@@ -110,8 +110,6 @@ export const onScroll = (option: Partial<Feed>, cb: Function, loading: Ref<Boole
   };
 
   const onScroll = throttle(handleScroll, delay);
-  console.log(container);
-
   container.addEventListener('scroll', onScroll);
   return () => {
     container.removeEventListener('scroll', onScroll);

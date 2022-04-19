@@ -8,11 +8,11 @@ import serialize from './utils/serialize';
 
 export function requestMix<P extends unknown[], R>(request: HttpRequest<P, R>, option: any) {
   if (option?.feed) {
-    return feedFetch(request, option);
+    return feedFetch<P, R>(request, option);
   } else if (option?.pagination) {
-    return paginationFetch(request, option);
+    return paginationFetch<P, R>(request, option);
   } else {
-    return baseFetch(request, option);
+    return baseFetch<P, R>(request, option);
   }
 }
 

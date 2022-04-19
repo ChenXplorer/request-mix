@@ -1,4 +1,4 @@
-import { Ref } from 'vue';
+import { Ref, ComputedRef } from 'vue';
 import { Feed } from '../types/options';
 import { isSSR } from './index';
 import throttle from 'lodash/throttle';
@@ -63,7 +63,7 @@ const getScrollContainer = (el: HTMLElement, isVertical = true): Window | HTMLEl
   return parent;
 };
 
-export const onScroll = (option: Partial<Feed>, cb: Function, loading: Ref<Boolean>) => {
+export const onScroll = (option: Partial<Feed>, cb: Function, loading: Ref<Boolean> | ComputedRef<Boolean>) => {
   const el = option?.containerRef?.value?.$el || option?.containerRef?.value;
 
   const container = getScrollContainer(el);

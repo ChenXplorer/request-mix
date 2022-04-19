@@ -98,7 +98,8 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   const observerEvents = () => {
     const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     if (containerEl) {
-      destroyObserver = onScroll(defaultFeed, loadMore, loading)!;
+      const status = computed(() => !!rest?.error.value || loading.value);
+      destroyObserver = onScroll(defaultFeed, loadMore, status)!;
     }
   };
   const unobserveEvents = () => {

@@ -118,7 +118,7 @@ export const createCommonFetch = <P extends unknown[], R>(
       setState({
         data: null,
         loading: false,
-        error: error,
+        error: error || true,
         nothing: false,
       });
       if (option?.onError) {

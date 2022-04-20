@@ -34,7 +34,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     feedOptionTemp,
   );
 
-  const { data: dataTemp, parallelResults, load, params, loading, ...rest } = baseFetch(request, {
+  const { data: dataTemp, parallelResults, load, params, loading, nothing: nothingTemp, ...rest } = baseFetch(request, {
     ...feedOption,
     parallelKey: (...args: P) => (args?.[0] as Object)?.[defaultFeed.increaseKey] + '',
   });
@@ -51,14 +51,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
   });
 
   const nothing = computed(() => {
-    const values = Object.values(parallelResults);
-    if (values?.length) {
-      const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
-      const val = getByPath(values[0].data!, dadaKey);
-      const result = Object.keys(val || []);
-      return result.length === 0;
-    }
-    return false;
+    return nothingTemp.value && list.value.length === 0;
   });
 
   const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);

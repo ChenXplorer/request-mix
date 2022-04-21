@@ -1,8 +1,7 @@
-import { generateRequestKey, isSSR } from './../utils/index';
+import { generateRequestKey, isObject, isSSR } from './../utils/index';
 import { BaseOptions } from '../types/options';
-import { HttpRequest, Mutate, Query, State, UnwrapRefs } from '../types/request';
+import { HttpRequest, Mutate, State, UnwrapRefs, CommonResult } from '../types';
 import { Ref, ref, onServerPrefetch } from 'vue';
-import { HttpRequestResult } from '../types/request';
 import { genRequest, isFunction, setStateRelation } from '../utils';
 import { CACHE, HTTP_CACHE_SSR } from '../utils/cache';
 import { DEFAULT_PARALLEL_KEY, DEFAULT_CACHE_TIME, SSR_DATA } from '../utils/cons';
@@ -11,7 +10,7 @@ export const createCommonFetch = <P extends unknown[], R>(
   request: HttpRequest<P, R>,
   option: BaseOptions<P, R>,
   initialData?: Partial<UnwrapRefs<State<P, R>>>,
-): HttpRequestResult<P, R> => {
+): CommonResult<P, R> => {
   const loading = ref(initialData?.loading ?? false);
   const nothing = ref(initialData?.nothing ?? false);
   const error = ref(initialData?.error ?? null);
@@ -55,8 +54,9 @@ export const createCommonFetch = <P extends unknown[], R>(
 
   const judgeNone = (res: any) => {
     let noResult = false;
-    if (Array.isArray(res)) {
-      noResult = res.length === 0;
+    if (isObject(res)) {
+      const len = Object.keys(res).length;
+      noResult = len === 0;
     } else {
       noResult = !res;
     }
@@ -118,7 +118,7 @@ export const createCommonFetch = <P extends unknown[], R>(
       setState({
         data: null,
         loading: false,
-        error: error || true,
+        error: error || {},
         nothing: false,
       });
       if (option?.onError) {

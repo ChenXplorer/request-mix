@@ -1,11 +1,11 @@
 import { Ref, WatchSource, ComputedRef } from 'vue';
 
-export interface Pagination {
+export type Pagination = {
   pnKey: string;
   psKey: string;
   totalKey: string;
   totalPageKey: string;
-}
+};
 
 export type BaseOptions<P extends unknown[], R> = Partial<{
   defaultParams: P;
@@ -16,14 +16,13 @@ export type BaseOptions<P extends unknown[], R> = Partial<{
   cacheTime: number;
   SSR: boolean;
   asyncDataKey: string;
-  formatData: (oldState: R) => any;
-  onSuccess?: (data: R, params: P) => void;
-  onError?: (error: Error, params: P) => void;
-  onBefore?: (params: P) => void;
-  onAfter?: (params: P) => void;
+  formatData: (oldState: any) => R;
+  onSuccess: (data: R, params: P) => void;
+  onError: (error: Error, params: P) => void;
+  onBefore: (params: P) => void;
+  onAfter: (params: P) => void;
   delayLoadingTime: number;
   refreshDeps: WatchSource<any>[];
-  pagination: Partial<Pagination>;
 }>;
 
 export type Feed = {
@@ -38,3 +37,11 @@ export type Feed = {
   scrollCheckFull: Boolean;
   containerRef: Ref<any>;
 };
+
+export interface PaginationOption<P extends unknown[], R> extends Omit<BaseOptions<P, R>, 'parallelKey'> {
+  pagination: Pagination;
+}
+
+export interface FeedOption<P extends unknown[], R> extends Omit<BaseOptions<P, R>, 'parallelKey'> {
+  feed: Partial<Feed>;
+}

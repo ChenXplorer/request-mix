@@ -1,12 +1,13 @@
-import { BaseOptions } from '../types/options';
 import { DEFAULT_PARALLEL_KEY } from '../utils/cons';
 import { computed, reactive, Ref, ref, watch } from 'vue';
-import { HttpRequest, ParallelResults, HttpRequestResult, UnwrapRefs, Mutate } from '../types/request';
+import { BaseOptions, HttpRequest, ParallelResults, CommonResult, UnwrapRefs, Mutate, BaseResults } from '../types';
 import { createCommonFetch } from './createCommonFetch';
-import { genRequest } from '../utils/index';
 import { CACHE } from '../utils/cache';
 
-export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: BaseOptions<P, R>) {
+export function baseFetch<P extends unknown[], R>(
+  request: HttpRequest<P, R>,
+  options?: BaseOptions<P, R>,
+): BaseResults<P, R> {
   const config = options ?? {};
   const {
     defaultParams = ([] as unknown) as P,
@@ -37,9 +38,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     }
     const currentKey = parallelKey?.(...args) ?? DEFAULT_PARALLEL_KEY;
     if (!parallelResults[currentKey]) {
-      parallelResults[currentKey] = <UnwrapRefs<HttpRequestResult<P, R>>>(
-        reactive(createCommonFetch<P, R>(request, config))
-      );
+      parallelResults[currentKey] = <UnwrapRefs<CommonResult<P, R>>>reactive(createCommonFetch<P, R>(request, config));
     }
     parallelLatestKey.value = currentKey;
     return parallelLatestResult.value.load(...args);
@@ -58,7 +57,7 @@ export function baseFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     const cacheParallelResult = cacheData?.parallelResults ?? {};
     const cacheCurrentParallelKey = cacheData?.currentParallelKey;
     Object.keys(cacheParallelResult).forEach((cpr) => {
-      parallelResults[cpr] = <UnwrapRefs<HttpRequestResult<P, R>>>reactive(
+      parallelResults[cpr] = <UnwrapRefs<CommonResult<P, R>>>reactive(
         createCommonFetch<P, R>(request, config, {
           ...cacheParallelResult[cpr],
         }),

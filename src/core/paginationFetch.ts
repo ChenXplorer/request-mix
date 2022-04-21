@@ -1,11 +1,12 @@
-import { BaseOptions, Pagination } from '../types/options';
-import { HttpRequest } from 'src/types/request';
+import { BaseOptions, Pagination, HttpRequest, PaginationResult, PaginationOption } from '../types';
 import { getByPath, merge } from '../utils';
 import { baseFetch } from './baseFetch';
 import { computed, ComputedRef } from 'vue';
-export type PaginationOption<P extends unknown[], R> = Omit<BaseOptions<P, R>, 'parallelKey'>;
 
-export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, R>, options?: PaginationOption<P, R>) {
+export function paginationFetch<P extends unknown[], R>(
+  request: HttpRequest<P, R>,
+  options?: PaginationOption<P, R>,
+): PaginationResult<P, R> {
   const { pagination, ...paginationOptionTemp } = options ?? {};
   /* need request params is object as 
     test( params: {pn:1,ps:10}) 
@@ -86,6 +87,8 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
   const total = computed(() => getByPath(data.value!, defaultPagination.totalKey, 0));
 
   return {
+    ...rest,
+    parallelResults,
     data,
     load,
     pn,
@@ -94,6 +97,5 @@ export function paginationFetch<P extends unknown[], R>(request: HttpRequest<P, 
     totalPage,
     change,
     params,
-    ...rest,
   };
 }

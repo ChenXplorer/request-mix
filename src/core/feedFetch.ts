@@ -1,13 +1,13 @@
-import { getByPath, isInClient, merge } from '../utils';
-import { computed, onMounted, onUnmounted, nextTick, ref, Ref, watch, watchEffect } from 'vue';
-import { BaseOptions, Feed } from '../types/options';
-import { HttpRequest } from '../types/request';
+import { getByPath, merge } from '../utils';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { FeedOption, Feed, FeedResult, HttpRequest } from '../types';
 import { baseFetch } from './baseFetch';
 import { onScroll } from '../utils/infinite-scroll';
 
-export type FeedOption<P extends unknown[], R> = Omit<BaseOptions<P, R>, 'parallelKey'> & { feed: Partial<Feed> };
-
-export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, option: FeedOption<P, R>) {
+export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
+  request: HttpRequest<P, R>,
+  option: FeedOption<P, R>,
+): FeedResult<P, R, LR> {
   const { feed, ...feedOptionTemp } = option;
 
   const defaultFeed = {
@@ -34,7 +34,7 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
     feedOptionTemp,
   );
 
-  const { data: dataTemp, parallelResults, load, params, loading, nothing: nothingTemp, ...rest } = baseFetch(request, {
+  const { data: dataTemp, parallelResults, load, params, loading, ...rest } = baseFetch(request, {
     ...feedOption,
     parallelKey: (...args: P) => (args?.[0] as Object)?.[defaultFeed.increaseKey] + '',
   });
@@ -46,12 +46,12 @@ export function feedFetch<P extends unknown[], R>(request: HttpRequest<P, R>, op
       const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
       const val = getByPath(cur.data!, dadaKey);
       return val && Array.isArray(val) ? pre.concat(val) : pre;
-    }, [] as R[]);
+    }, [] as LR[]);
     return res;
   });
 
   const nothing = computed(() => {
-    return nothingTemp.value && list.value.length === 0;
+    return params.value && list.value.length === 0;
   });
 
   const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);

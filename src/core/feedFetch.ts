@@ -9,6 +9,7 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
   option: FeedOption<P, R>,
 ): FeedResult<P, R, LR> {
   const { feed, ...feedOptionTemp } = option;
+  const nothing = ref(false);
 
   const defaultFeed = {
     dataKey: '',
@@ -37,6 +38,10 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
   const { data: dataTemp, parallelResults, load, params, loading, ...rest } = baseFetch(request, {
     ...feedOption,
     parallelKey: (...args: P) => (args?.[0] as Object)?.[defaultFeed.increaseKey] + '',
+    onAfter: (params: P) => {
+      feedOption?.onAfter?.(params);
+      nothing.value = list.value.length === 0;
+    },
   });
 
   // get total data list
@@ -48,10 +53,6 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
       return val && Array.isArray(val) ? pre.concat(val) : pre;
     }, [] as LR[]);
     return res;
-  });
-
-  const nothing = computed(() => {
-    return params.value && list.value.length === 0;
   });
 
   const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);

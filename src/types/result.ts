@@ -21,11 +21,12 @@ export interface BaseResults<P extends unknown[], R> extends CommonResult<P, R> 
   parallelResults: ParallelResults<P, R>;
 }
 
-export interface FeedResult<P extends unknown[], R, LR> extends Omit<BaseResults<P, R>, 'parallelResults' | 'load'> {
+export interface FeedResult<P extends unknown[], R, LR>
+  extends Omit<BaseResults<P, R>, 'parallelResults' | 'load' | 'nothing'> {
   list: ComputedRef<LR[]>;
   total: Ref<number>;
   noMore: ComputedRef<boolean>;
-  nothing: ComputedRef<boolean>;
+  nothing: Ref<boolean>;
   unobserveEvents: () => void;
   loadMore: () => void;
 }

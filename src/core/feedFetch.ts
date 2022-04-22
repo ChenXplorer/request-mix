@@ -77,6 +77,8 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
   };
 
   const refresh = () => {
+    nothing.value = false;
+    total.value = option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER;
     Object.keys(parallelResults).forEach((key) => {
       delete parallelResults[key];
     });

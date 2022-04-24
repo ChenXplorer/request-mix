@@ -1,5 +1,5 @@
 import { getByPath, merge } from '../utils';
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref, watch } from 'vue';
 import { FeedOption, Feed, FeedResult, HttpRequest } from '../types';
 import { baseFetch } from './baseFetch';
 import { onScroll } from '../utils/infinite-scroll';
@@ -10,12 +10,12 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
 ): FeedResult<P, R, LR> {
   const { feed, ...feedOptionTemp } = option;
   const nothing = ref(false);
-
+  const list = ref([]) as Ref<LR[]>;
   const defaultFeed = {
     dataKey: '',
     totalKey: 'total',
     increaseKey: 'pn',
-    scrollCheckFull: true,
+    scrollCheckFull: !feedOptionTemp.manual,
     loadingOffset: 100,
     increaseStep: 1,
     ...feed,
@@ -39,21 +39,22 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
     ...feedOption,
     parallelKey: (...args: P) => (args?.[0] as Object)?.[defaultFeed.increaseKey] + '',
     onAfter: (params: P) => {
-      feedOption?.onAfter?.(params);
+      list.value = getList();
       nothing.value = list.value.length === 0;
+      feedOption?.onAfter?.(params);
     },
   });
 
   // get total data list
   // tips: Object.keys Object.values ans so on will sort auto by key
-  const list = computed(() => {
+  const getList = () => {
     const res = Object.values(parallelResults).reduce((pre, cur) => {
       const dadaKey = typeof defaultFeed.dataKey === 'string' ? defaultFeed.dataKey : defaultFeed.dataKey.value;
       const val = getByPath(cur.data!, dadaKey);
       return val && Array.isArray(val) ? pre.concat(val) : pre;
     }, [] as LR[]);
     return res;
-  });
+  };
 
   const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);
 
@@ -79,6 +80,7 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
   const refresh = () => {
     nothing.value = false;
     total.value = option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER;
+    list.value = [];
     Object.keys(parallelResults).forEach((key) => {
       delete parallelResults[key];
     });
@@ -94,7 +96,7 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
   const observerEvents = () => {
     const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     if (containerEl) {
-      const status = computed(() => !!rest?.error.value || loading.value);
+      const status = computed(() => !!rest?.error.value || loading.value || nothing.value);
       destroyObserver = onScroll(defaultFeed, loadMore, status)!;
     }
   };

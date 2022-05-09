@@ -1,6 +1,6 @@
-import { getByPath, merge } from '../utils';
+import { getByPath, merge, isSSR } from '../utils';
 import { computed, onMounted, onUnmounted, Ref, ref, watch } from 'vue';
-import { FeedOption, Feed, FeedResult, HttpRequest } from '../types';
+import { FeedOption, FeedResult, HttpRequest } from '../types';
 import { baseFetch } from './baseFetch';
 import { onScroll } from '../utils/infinite-scroll';
 
@@ -45,6 +45,15 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
     },
   });
 
+  const getSSRCache = () => {
+    if (!isSSR && option.asyncDataKey && option.SSR) {
+      list.value = getList();
+      if (!loading.value) {
+        nothing.value = list.value.length === 0;
+        feedOption?.onAfter?.(params.value);
+      }
+    }
+  };
   // get total data list
   // tips: Object.keys Object.values ans so on will sort auto by key
   const getList = () => {
@@ -58,10 +67,16 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
 
   const total = ref(option.feed?.total?.value ?? Number.MAX_SAFE_INTEGER);
 
-  watch(dataTemp, (val) => {
-    const key = typeof defaultFeed.totalKey === 'string' ? defaultFeed.totalKey : defaultFeed.totalKey.value;
-    val && (total.value = option.feed?.total?.value ?? getByPath(val, key, 0));
-  });
+  watch(
+    dataTemp,
+    (val) => {
+      const key = typeof defaultFeed.totalKey === 'string' ? defaultFeed.totalKey : defaultFeed.totalKey.value;
+      val && (total.value = option.feed?.total?.value ?? getByPath(val, key, 0));
+    },
+    {
+      immediate: true,
+    },
+  );
 
   const noMore = computed(() => option.feed?.noMore?.value ?? list.value.length >= total.value);
 
@@ -90,13 +105,15 @@ export function feedFetch<P extends unknown[], R, LR extends unknown[]>(
     observerEvents();
   };
 
+  getSSRCache();
+
   // observer dom to load more auto
   let destroyObserver: Function;
 
   const observerEvents = () => {
     const containerEl = option?.feed?.containerRef?.value?.$el || option?.feed?.containerRef?.value;
     if (containerEl) {
-      const status = computed(() => !!rest?.error.value || loading.value || nothing.value);
+      const status = computed(() => !!rest?.error.value || loading.value || nothing.value || noMore.value);
       destroyObserver = onScroll(defaultFeed, loadMore, status)!;
     }
   };
